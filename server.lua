@@ -105,7 +105,6 @@ AddEventHandler(
 AddEventHandler(
     "vRP:playerSpawn",
     function()
-        print("player join")
         Citizen.Wait(500)
         RefreshScoreboard()
     end
@@ -114,7 +113,6 @@ AddEventHandler(
 AddEventHandler(
     "vRP:playerLeave",
     function ()
-        print("player leave")
         Citizen.Wait(500)
         RefreshScoreboard()
     end
