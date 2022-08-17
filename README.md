@@ -1,5 +1,5 @@
 # **GS Scoreboard**
-Beautiful and low resource usage scoreboard made for ESX Framework with player ped preview and player info and keyboard binds showcase!
+Beautiful and low resource usage scoreboard made for ESX and vRP Framework with player ped preview and player info and keyboard binds showcase!
 
 Also you can sort the columns in alphabetical order or in numerical order.
 
@@ -30,6 +30,11 @@ Make **pull-requests** if you want improve this script!
 
     - Added a section like player info and keybinds that contains info about allowed illegal activities with a title, indicative icon and a tooltip description!
     - The new illegal activities section can also be toggled in the config file!
+
+**1.2.2**
+
+    - Bug fixes
+    - Created a new branch for the version made for the vRP Framework!
 
 # 
 **LICENSE**
