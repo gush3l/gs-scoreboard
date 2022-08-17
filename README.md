@@ -1,5 +1,5 @@
 # **GS Scoreboard**
-Beautiful and low resource usage scoreboard made for ESX and vRP Framework with player ped preview and player info and keyboard binds showcase!
+Beautiful and low resource usage scoreboard made for vRP Framework with player ped preview and player info and keyboard binds showcase!
 
 Also you can sort the columns in alphabetical order or in numerical order.
 
