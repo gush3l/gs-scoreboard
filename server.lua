@@ -42,7 +42,7 @@ function RefreshScoreboard()
         local playerName = Sanitize(vRP.getPlayerName({source}))
         vRP.getUserIdentity({user_id, function(identity)
             if identity then
-                playerName = Sanitize(identity.firstName.." "..identity.secondName)
+                playerName = Sanitize(identity.firstname.." "..identity.name)
             end
         end})
         local playerJob = getJobName(vRP.getUserGroupByType({user_id,'job'}))
@@ -97,7 +97,7 @@ AddEventHandler(
             data.playerID = user_id
             vRP.getUserIdentity({user_id, function(identity)
                 if identity then
-                    data.roleplayName = Sanitize(identity.firstName.." "..identity.secondName)
+                    data.roleplayName = Sanitize(identity.firstname.." "..identity.name)
                 end
             end})
             TriggerClientEvent("gs-scoreboard:receiveRequestedData", to, source, data)
