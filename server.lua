@@ -40,7 +40,7 @@ function RefreshScoreboard()
         local playerID = user_id
         vRP.getUserIdentity({user_id, function(identity)
             if identity then
-                local playerName = Sanitize(vRP.getPlayerName({source}))
+                local playerName = Sanitize(identity.firstname.." "..identity.name)
                 local playerJob = getJobName(vRP.getUserGroupByType({user_id,'job'}))
                 local playerFaction = getFactionName(vRP.getUserFaction({user_id}))
                 TriggerClientEvent("gs-scoreboard:addUserToScoreboard", -1, source ,playerID, playerName, playerJob, playerFaction)
