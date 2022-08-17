@@ -37,19 +37,17 @@ function RefreshScoreboard()
     local players = vRP.getUsers({})
     TriggerClientEvent("gs-scoreboard:refrehScoreboard", -1)
     for user_id,source in pairs(players) do
-        local playerSource = source
         local playerID = user_id
-        local playerName = Sanitize(vRP.getPlayerName({source}))
         vRP.getUserIdentity({user_id, function(identity)
             if identity then
-                playerName = Sanitize(identity.firstName.." "..identity.secondName)
+                local playerName = Sanitize(vRP.getPlayerName({source}))
+                local playerJob = getJobName(vRP.getUserGroupByType({user_id,'job'}))
+                local playerFaction = getFactionName(vRP.getUserFaction({user_id}))
+                TriggerClientEvent("gs-scoreboard:addUserToScoreboard", -1, source ,playerID, playerName, playerJob, playerFaction)
+                TriggerClientEvent("gs-scoreboard:sendConfigToNUI", -1)
+                getIllegalActivitesData()
             end
         end})
-        local playerJob = getJobName(vRP.getUserGroupByType({user_id,'job'}))
-        local playerFaction = getFactionName(vRP.getUserFaction({user_id}))
-        TriggerClientEvent("gs-scoreboard:addUserToScoreboard", -1, source ,playerID, playerName, playerJob, playerFaction)
-        TriggerClientEvent("gs-scoreboard:sendConfigToNUI", -1)
-        getIllegalActivitesData()
     end
 end
 
@@ -93,14 +91,13 @@ AddEventHandler(
     function(to, data)
         local user_id = vRP.getUserId({source})
         if user_id ~= nil then
-            data.roleplayName = Sanitize(vRP.getPlayerName({source}))
-            data.playerID = user_id
             vRP.getUserIdentity({user_id, function(identity)
                 if identity then
-                    data.roleplayName = Sanitize(identity.firstName.." "..identity.secondName)
+                    data.playerID = user_id
+                    data.roleplayName = Sanitize(identity.firstname.." "..identity.name)
+                    TriggerClientEvent("gs-scoreboard:receiveRequestedData", to, source, data)
                 end
             end})
-            TriggerClientEvent("gs-scoreboard:receiveRequestedData", to, source, data)
         end
     end
 )
