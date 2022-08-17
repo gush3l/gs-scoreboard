@@ -3,13 +3,13 @@ game 'gta5'
 
 author "gush3l"
 description "Beautiful modern UI scoreboard with user previews, player sorting and more!"
-version '1.2.1'
+version '1.2.2'
 ui_page "html/main.html"
 
 lua54 'yes'
 
 shared_scripts {
-    '@es_extended/imports.lua',
+    "@vrp/lib/utils.lua",
     'config.lua'
 }
 

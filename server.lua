@@ -1,3 +1,8 @@
+local Tunnel = module("vrp", "lib/Tunnel")
+local Proxy = module("vrp", "lib/Proxy")
+vRP = Proxy.getInterface("vRP")
+vRPclient = Tunnel.getInterface("vRP","vRP")
+
 function Sanitize(str)
     local replacements = {
         ['&' ] = '&amp;',
@@ -12,15 +17,37 @@ function Sanitize(str)
         end)
 end
 
+function getFactionName(faction)
+    if faction == "user" then
+        return "No Faction"
+    else
+        return faction
+    end
+end
+
+function getJobName(job)
+    if job == "" then
+        return "Unemployed"
+    else
+        return job
+    end
+end
+
 function RefreshScoreboard()
-    local xPlayers = ESX.GetExtendedPlayers()
+    local players = vRP.getUsers({})
     TriggerClientEvent("gs-scoreboard:refrehScoreboard", -1)
-    for _, xPlayer in pairs(xPlayers) do
-        local playerID = xPlayer.source
-        local playerName = Sanitize(xPlayer.getName())
-        local playerJob = xPlayer.job.label
-        local playerGroup = xPlayer.getGroup()
-        TriggerClientEvent("gs-scoreboard:addUserToScoreboard", -1, playerID, playerName, playerJob, playerGroup)
+    for user_id,source in pairs(players) do
+        local playerSource = source
+        local playerID = user_id
+        local playerName = Sanitize(vRP.getPlayerName({source}))
+        vRP.getUserIdentity({user_id, function(identity)
+            if identity then
+                playerName = Sanitize(identity.firstName.." "..identity.secondName)
+            end
+        end})
+        local playerJob = getJobName(vRP.getUserGroupByType({user_id,'job'}))
+        local playerFaction = getFactionName(vRP.getUserFaction({user_id}))
+        TriggerClientEvent("gs-scoreboard:addUserToScoreboard", -1, source ,playerID, playerName, playerJob, playerFaction)
         TriggerClientEvent("gs-scoreboard:sendConfigToNUI", -1)
         getIllegalActivitesData()
     end
@@ -44,11 +71,11 @@ AddEventHandler(
     function()
         local onlinePlayers = getOnlinePlayers()
         local onlineStaff = getOnlineStaff()
-        local onlinePolice = getOnlinePolice()
-        local onlineEMS = getOnlineEMS()
-        local onlineTaxi = getOnlineTaxi()
-        local onlineMechanics = getOnlineMechanics()
-        TriggerClientEvent("gs-scoreboard:setValues", -1, onlinePlayers, onlineStaff, onlinePolice, onlineEMS, onlineTaxi, onlineMechanics, illegalActivites)
+        local onlinePolice = getOnlineByFaction(Config.policeFactionName)
+        local onlineEMS = getOnlineByFaction(Config.emsFactionName)
+        local onlineTaxi = getOnlineByFaction(Config.taxiFactionName)
+        local onlineMechanics = getOnlineByFaction(Config.mechanicFactionName)
+        TriggerClientEvent("gs-scoreboard:setValues", -1, onlinePlayers, onlineStaff, onlinePolice, onlineEMS, onlineTaxi, onlineMechanics)
     end
 )
 
@@ -64,70 +91,79 @@ RegisterNetEvent('gs-scoreboard:sendRequestedData')
 AddEventHandler(
     'gs-scoreboard:sendRequestedData',  
     function(to, data)
-        local xPlayer = ESX.GetPlayerFromId(source)
-        if xPlayer ~= nil then
-            data.roleplayName = xPlayer.getName()
+        local user_id = vRP.getUserId({source})
+        if user_id ~= nil then
+            data.roleplayName = Sanitize(vRP.getPlayerName({source}))
+            data.playerID = user_id
+            vRP.getUserIdentity({user_id, function(identity)
+                if identity then
+                    data.roleplayName = Sanitize(identity.firstName.." "..identity.secondName)
+                end
+            end})
             TriggerClientEvent("gs-scoreboard:receiveRequestedData", to, source, data)
         end
     end
 )
 
 AddEventHandler(
-    'esx:playerLoaded',  
+    "vRP:playerSpawn",
     function()
+        print("player join")
+        Citizen.Wait(500)
         RefreshScoreboard()
     end
 )
 
 AddEventHandler(
-    'playerDropped', 
-    function()
+    "vRP:playerLeave",
+    function ()
+        print("player leave")
+        Citizen.Wait(500)
         RefreshScoreboard()
     end
 )
 
-AddEventHandler('playerDropped', function (reason)
-    Citizen.Wait(500)
-    RefreshScoreboard()
-end)
-  
-
 function getOnlinePlayers()
-    local xPlayers = ESX.GetExtendedPlayers()
-    return #xPlayers
+    local players = vRP.getUsers({})
+    local playersCount = 0
+    for _ in pairs(players) do
+        playersCount = playersCount + 1
+    end
+    return playersCount
 end
 
 function getOnlineStaff()
-    local xPlayersTotal = ESX.GetExtendedPlayers()
-    local xPlayersUsers = ESX.GetExtendedPlayers('group','user')
-    return (#xPlayersTotal - #xPlayersUsers)
+    local players = vRP.getUsers({})
+    local staffCount = 0
+    for user_id, source in pairs(players) do
+        if vRP.isAdmin({user_id}) then
+            staffCount = staffCount + 1
+        end
+    end
+    return staffCount
 end
 
-function getOnlinePolice()
-    local xPlayers = ESX.GetExtendedPlayers('group','police')
-    return #xPlayers
+function getOnlineGroup(groupName)
+    local usersGroup = vRP.getUsersByGroup({groupName})
+    return #usersGroup
 end
 
-function getOnlineEMS()
-    local xPlayers = ESX.GetExtendedPlayers('group','ems')
-    return #xPlayers
-end
-
-function getOnlineTaxi()
-    local xPlayers = ESX.GetExtendedPlayers('group','taxi')
-    return #xPlayers
-end
-
-function getOnlineMechanics()
-    local xPlayers = ESX.GetExtendedPlayers('group','mechanic')
-    return #xPlayers
+function getOnlineByFaction(factionName)
+    local players = vRP.getUsers({})
+    local factionCount = 0
+    for user_id, source in pairs(players) do
+        if vRP.isUserInFaction({user_id,factionName}) then
+            factionCount = factionCount + 1
+        end
+    end
+    return factionCount
 end
 
 function getIllegalActivitesData()
     local data = Config.illegalActivites
     for i = 1,#data do
         data[i]["onlinePlayers"] = getOnlinePlayers()
-        data[i]["onlineGroup"] = #ESX.GetExtendedPlayers('group',data[i]["group_name"])
+        data[i]["onlineGroup"] = getOnlineByFaction(data[i]["group_name"])
         TriggerClientEvent("gs-scoreboard:sendIllegalActivity",-1,data[i])
     end
     return data

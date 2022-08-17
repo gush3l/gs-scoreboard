@@ -1,12 +1,17 @@
 Config = {}
 
-Config.updateScoreboardInterval = 5000
+Config.updateScoreboardInterval = 2500
 Config.screenBlur = true
 Config.screenBlurAnimationDuration = 500
 Config.showKeyBinds = true
 Config.showPlayerInfo = true
 Config.showPlayerPed = true
 Config.showIllegalActivites = true
+
+Config.policeFactionName = "Politie"
+Config.emsFactionName = "SMURD"
+Config.taxiFactionName = "Taxi"
+Config.mechanicFactionName = "Mecanic"
 
 Config.keyBinds = {
     {

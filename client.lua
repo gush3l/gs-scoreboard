@@ -72,10 +72,11 @@ end)
 RegisterNetEvent("gs-scoreboard:addUserToScoreboard")
 AddEventHandler(
     "gs-scoreboard:addUserToScoreboard",
-    function(playerID, playerName, playerJob, playerGroup)
+    function(source,playerID, playerName, playerJob, playerGroup)
         SendNUIMessage(
             {
                 action="addUserToScoreboard",
+                source = source,
                 playerID = playerID,
                 playerName = playerName,
                 playerJob = playerJob,
@@ -137,7 +138,7 @@ AddEventHandler(
 
 RegisterNUICallback('showPlayerPed', function(data)
     if Config.showPlayerPed then
-        local playerID = data.playerID
+        local playerID = data.source
         DeleteEntity(PlayerPedPreview)
         Citizen.Wait(100)
         local playerTargetID = GetPlayerPed(GetPlayerFromServerId(playerID))
@@ -152,7 +153,7 @@ RegisterNUICallback('showPlayerPed', function(data)
         GivePedToPauseMenu(PlayerPedPreview, 2)
         SetPauseMenuPedLighting(true)
         SetPauseMenuPedSleepState(true)
-        TriggerServerEvent('gs-scoreboard:requestUserData', tonumber(data.playerID))
+        TriggerServerEvent('gs-scoreboard:requestUserData', tonumber(playerID), data.playerID)
     end
 end)
 

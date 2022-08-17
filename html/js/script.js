@@ -114,7 +114,7 @@ $(document).ready(function() {
             td1Element.id = "td1"
             td2Element.textContent = data.playerName
             td2Element.id = "td2"
-            td2Element.onclick = function(event){clickedPlayerName(data.playerID,data.playerName)}
+            td2Element.onclick = function(event){clickedPlayerName(data.source,data.playerID,data.playerName)}
             td3Element.textContent = data.playerJob
             td3Element.id = "td3"
             td4Element.textContent = data.playerGroup.charAt(0).toUpperCase() + data.playerGroup.slice(1);
@@ -207,14 +207,15 @@ $(document).ready(function() {
         if (toggleIllegalActivitesInfo == "false") $(".illegalActivitesContainer").hide()
     }
 
-    function clickedPlayerName(source,name) {
+    function clickedPlayerName(source,user_id,name) {
         fetch(`https://${GetParentResourceName()}/showPlayerPed`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json; charset=UTF-8',
             },
             body: JSON.stringify({
-                playerID: source,
+                source: source,
+                playerID: user_id,
                 playerName: name
             })
         });
