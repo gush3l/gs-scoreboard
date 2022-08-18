@@ -36,6 +36,7 @@ end
 function RefreshScoreboard()
     local players = vRP.getUsers({})
     TriggerClientEvent("gs-scoreboard:refrehScoreboard", -1)
+    getIllegalActivitesData()
     for user_id,source in pairs(players) do
         local playerID = user_id
         vRP.getUserIdentity({user_id, function(identity)
@@ -45,7 +46,6 @@ function RefreshScoreboard()
                 local playerFaction = getFactionName(vRP.getUserFaction({user_id}))
                 TriggerClientEvent("gs-scoreboard:addUserToScoreboard", -1, source ,playerID, playerName, playerJob, playerFaction)
                 TriggerClientEvent("gs-scoreboard:sendConfigToNUI", -1)
-                getIllegalActivitesData()
             end
         end})
     end
