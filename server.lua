@@ -69,10 +69,10 @@ AddEventHandler(
     function()
         local onlinePlayers = getOnlinePlayers()
         local onlineStaff = getOnlineStaff()
-        local onlinePolice = getOnlineByFaction(Config.policeFactionName)
-        local onlineEMS = getOnlineByFaction(Config.emsFactionName)
-        local onlineTaxi = getOnlineByFaction(Config.taxiFactionName)
-        local onlineMechanics = getOnlineByFaction(Config.mechanicFactionName)
+        local onlinePolice = getOnlineByType(Config.policeCounterType, Config.policeCounterIdentifier)
+        local onlineEMS = getOnlineByType(Config.emsCounterType, Config.emsCounterIdentifier)
+        local onlineTaxi = getOnlineByType(Config.taxiCounterType, Config.taxiCounterIdentifier)
+        local onlineMechanics = getOnlineByType(Config.mechanicCounterType, Config.mechanicCounterIdentifier)
         TriggerClientEvent("gs-scoreboard:setValues", -1, onlinePlayers, onlineStaff, onlinePolice, onlineEMS, onlineTaxi, onlineMechanics)
     end
 )
@@ -138,27 +138,27 @@ function getOnlineStaff()
     return staffCount
 end
 
-function getOnlineGroup(groupName)
-    local usersGroup = vRP.getUsersByGroup({groupName})
-    return #usersGroup
-end
-
-function getOnlineByFaction(factionName)
-    local players = vRP.getUsers({})
-    local factionCount = 0
-    for user_id, source in pairs(players) do
-        if vRP.isUserInFaction({user_id,factionName}) then
-            factionCount = factionCount + 1
+function getOnlineByType(type, value)
+    if type == "job" then
+        local usersGroup = vRP.getUsersByGroup({value})
+        return #usersGroup
+    elseif type == "faction" then
+        local players = vRP.getUsers({})
+        local factionCount = 0
+        for user_id, _ in pairs(players) do
+            if vRP.isUserInFaction({user_id,value}) then
+                factionCount = factionCount + 1
+            end
         end
+        return factionCount
     end
-    return factionCount
 end
 
 function getIllegalActivitesData()
     local data = Config.illegalActivites
     for i = 1,#data do
         data[i]["onlinePlayers"] = getOnlinePlayers()
-        data[i]["onlineGroup"] = getOnlineByFaction(data[i]["group_name"])
+        data[i]["onlineGroup"] = getOnlineByType(data[i]["groupType"],data[i]["groupName"])
         TriggerClientEvent("gs-scoreboard:sendIllegalActivity",-1,data[i])
     end
     return data

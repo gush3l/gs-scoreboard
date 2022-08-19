@@ -8,10 +8,17 @@ Config.showPlayerInfo = true
 Config.showPlayerPed = true
 Config.showIllegalActivites = true
 
-Config.policeFactionName = "Politie"
-Config.emsFactionName = "SMURD"
-Config.taxiFactionName = "Taxi"
-Config.mechanicFactionName = "Mecanic"
+Config.policeCounterType = "faction"
+Config.policeCounterIdentifier = "Politie"
+
+Config.emsCounterType = "faction"
+Config.emsCounterIdentifier = "EMS"
+
+Config.taxiCounterType = "job"
+Config.taxiCounterIdentifier = "taxi"
+
+Config.mechanicCounterType = "job"
+Config.mechanicCounterIdentifier = "mecanic"
 
 Config.keyBinds = {
     {
@@ -41,7 +48,8 @@ Config.illegalActivites = {
         id = "robseveneleven",
         title = "Rob 7/11 Stores",
         description = "You can rob 7/11 Stores only if there are a minimum of 10 players online and 2 Police Officers on duty!",
-        groupName = "police",
+        groupName = "Politie",
+        groupType = "faction",
         minimumPlayersOnline = 10,
         minimumGroupOnline = 2,
     },
@@ -49,7 +57,8 @@ Config.illegalActivites = {
         id = "robsmallbanks",
         title = "Rob Small Banks",
         description = "You can rob Small Banks only if there are a minimum of 30 players online and 4 Police Officers on duty!",
-        group_name = "police",
+        groupName = "Politie",
+        groupType = "faction",
         minimumPlayersOnline = 30,
         minimumGroupOnline = 4,
     },
@@ -57,7 +66,8 @@ Config.illegalActivites = {
         id = "robbigbanks",
         title = "Rob Big Bank",
         description = "You can rob Big Bank only if there are a minimum of 60 players online and 10 Police Officers on duty!",
-        group_name = "police",
+        groupName = "Politie",
+        groupType = "faction",
         minimumPlayersOnline = 60,
         minimumGroupOnline = 10,
     },

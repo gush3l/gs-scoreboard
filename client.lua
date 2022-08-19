@@ -16,6 +16,7 @@ function createPedScreen(playerID)
         N_0x98215325a695e78a(false)
         PlayerPedPreview = ClonePed(playerID, GetEntityHeading(playerID), true, false)
         local x,y,z = table.unpack(GetEntityCoords(PlayerPedPreview))
+        SetPedMute(PlayerPedPreview)
         SetEntityCoords(PlayerPedPreview, x,y,z-10)
         FreezeEntityPosition(PlayerPedPreview, true)
         SetEntityVisible(PlayerPedPreview, false, false)
@@ -28,7 +29,7 @@ function createPedScreen(playerID)
     end)
 end
 
-RegisterCommand('showscoreboard', function()
+RegisterCommand('togglescoreboard', function()
     if not isScoreboardOpen then
         TriggerServerEvent('gs-scoreboard:requestUserData', tonumber(GetPlayerServerId(PlayerId())))
         if Config.showPlayerPed then
@@ -36,24 +37,22 @@ RegisterCommand('showscoreboard', function()
             createPedScreen(PlayerPedId())
         end
         SendNUIMessage({
-            action = "show"
+            action = "show",
+            keyBindValue = tostring(GetControlInstructionalButton(0, 0x3635f532 | 0x80000000, 1)),
         })
         SetNuiFocus(true,true)
         if Config.screenBlur then
             TriggerScreenblurFadeIn(Config.screenBlurAnimationDuration)
         end
         isScoreboardOpen = true
-    end
-end, false)
-
-RegisterCommand('closescoreboard', function()
-    if isScoreboardOpen then
+    elseif isScoreboardOpen then
         if Config.showPlayerPed then
             DeleteEntity(PlayerPedPreview)
             SetFrontendActive(false)
         end
         SendNUIMessage({
-            action = "hide"
+            action = "hide",
+            keyBindValue = tostring(GetControlInstructionalButton(0, 0x3635f532 | 0x80000000, 1)),
         })
         SetNuiFocus(false,false)
         isScoreboardOpen = false
@@ -63,10 +62,10 @@ RegisterCommand('closescoreboard', function()
     end
 end, false)
 
-RegisterKeyMapping('showscoreboard', 'Show/Hide Scoreboard', 'keyboard', 'GRAVE')
+RegisterKeyMapping('togglescoreboard', 'Show/Hide Scoreboard', 'keyboard', 'GRAVE')
 
 RegisterNUICallback('closeScoreboard', function()
-    ExecuteCommand('closescoreboard')
+    ExecuteCommand('togglescoreboard')
 end)
 
 RegisterNetEvent("gs-scoreboard:addUserToScoreboard")
@@ -144,6 +143,7 @@ RegisterNUICallback('showPlayerPed', function(data)
         local playerTargetID = GetPlayerPed(GetPlayerFromServerId(playerID))
         PlayerPedPreview = ClonePed(playerTargetID, GetEntityHeading(playerTargetID), true, false)
         local x,y,z = table.unpack(GetEntityCoords(PlayerPedPreview))
+        SetPedMute(PlayerPedPreview)
         SetEntityCoords(PlayerPedPreview, x,y,z-10)
         FreezeEntityPosition(PlayerPedPreview, true)
         SetEntityVisible(PlayerPedPreview, false, false)

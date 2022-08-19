@@ -1,6 +1,109 @@
+const GTAcontrolKeys = {
+    "0": "t_0",
+    "1": "t_1",
+    "2": "t_2",
+    "3": "t_3",
+    "4": "t_4",
+    "5": "t_5",
+    "6": "t_6",
+    "7": "t_7",
+    "8": "t_8",
+    "9": "t_9",
+    "Escape": "b_199",
+    "F1": "b_170",
+    "F2": "b_171",
+    "F3": "b_172",
+    "F4": "b_173",
+    "F5": "b_174",
+    "F6": "b_175",
+    "F7": "b_176",
+    "F9": "b_178",
+    "F10": "b_179",
+    "F11": "b_180",
+    "F12": "b_181",
+    "Insert": "b_200",
+    "Delete": "b_198",
+    "Home": "b_1008",
+    "End": "b_201",
+    "PageUp": "b_1009",
+    "PageDown": "b_1010",
+    "Num1": "b_137",
+    "Num2": "b_138",
+    "Num3": "b_139",
+    "Num4": "b_140",
+    "Num5": "b_141",
+    "Num6": "b_142",
+    "Num7": "b_143",
+    "Num8": "b_144",
+    "Num9": "b_145",
+    "Num0": "b_136",
+    "Enter": "b_135",
+    "Num.": "b_132",
+    "Num+": "b_131",
+    "Num-": "b_130",
+    "NumLock": "b_1011",
+    "*": "b_134",
+    "NumEnter": "b_1003",
+    "RightShift": "b_1001",
+    "Tab": "b_1002",
+    "CapsLock": "b_1012",
+    "LeftShift": "b_1000",
+    "Meta": "b_995",
+    "LeftCtrl": "b_1013",
+    "LeftAlt": "b_1015",
+    "Space": "b_2000",
+    "RightAlt": "b_1016",
+    "RightCtrl": "b_1014",
+    "ArrowUp": "b_194",
+    "ArrowDown": "b_195",
+    "ArrowLeft": "b_196",
+    "ArrowRight": "b_197",
+    "BackSpace": "b_1004",
+    "`": "t_`",
+    "-": "t_-",
+    "=": "t_=",
+    "Q": "t_Q",
+    "W": "t_W",
+    "E": "t_E",
+    "R": "t_T",
+    "Y": "t_Y",
+    "U": "t_U",
+    "I": "t_I",
+    "O": "t_O",
+    "P": "t_P",
+    "\\": "t_\\",
+    "A": "t_A",
+    "S": "t_S",
+    "D": "t_D",
+    "F": "t_F",
+    "G": "t_G",
+    "H": "t_H",
+    "J": "t_J",
+    "K": "t_K",
+    "L": "t_L",
+    ";": "t_;",
+    "'": "t_'",
+    "Z": "t_Z",
+    "X": "t_X",
+    "C": "t_C",
+    "V": "t_V",
+    "B": "t_B",
+    "N": "t_N",
+    "M": "t_M",
+    ",": "t_,",
+    ".": "t_.",
+    "/": "t_/"
+}
+
+var GTAkeyBind = "t_`"
+
 var config = {}
 var onlinePlayers = 0
 var isScoreboardOpen = false
+
+function capitalizeFirstChar(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1)
+}
 
 function sortTableLetters(n) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
@@ -85,11 +188,13 @@ $(document).ready(function() {
             toggleIllegalActivitesInfo()
         }
         if (data.action == 'show' && !isScoreboardOpen) {
+            GTAkeyBind = data.keyBindValue
             isScoreboardOpen = true
             $("#main").fadeIn(500);
             loadKeyBinds()
         }
         if (data.action == 'hide' && isScoreboardOpen) {
+            GTAkeyBind = data.keyBindValue
             isScoreboardOpen = false
             $("#main").fadeOut(500);
         }
@@ -117,7 +222,7 @@ $(document).ready(function() {
             td2Element.onclick = function(event){clickedPlayerName(data.source,data.playerID,data.playerName)}
             td3Element.textContent = data.playerJob
             td3Element.id = "td3"
-            td4Element.textContent = data.playerGroup.charAt(0).toUpperCase() + data.playerGroup.slice(1);
+            td4Element.textContent = capitalizeFirstChar(data.playerGroup);
             td4Element.id = "td4"
 
             trElement.appendChild(td1Element)
@@ -143,7 +248,9 @@ $(document).ready(function() {
     })
 
     document.onkeyup = function(data) {
-        if (data.which == 192 && isScoreboardOpen) {
+        var keyPressed = capitalizeFirstChar(data.key)
+        if (data.location == 3) keyPressed = "Num"+keyPressed
+        if ((GTAkeyBind == GTAcontrolKeys[keyPressed]) && isScoreboardOpen) {
             $.post(`https://${GetParentResourceName()}/closeScoreboard`, JSON.stringify({}))
             $("#main").stop();
             $("#main").stop();
