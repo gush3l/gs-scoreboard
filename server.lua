@@ -151,6 +151,15 @@ function getOnlineByType(type, value)
             end
         end
         return factionCount
+    elseif type == "permission" then
+        local players = vRP.getUsers({})
+        local permissionCount = 0
+        for user_id, _ in pairs(players) do
+            if vRP.hasPermission({user_id, value}) then
+                permissionCount = permissionCount + 1
+            end
+        end
+        return permissionCount
     end
 end
 
