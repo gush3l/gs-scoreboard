@@ -1,13 +1,13 @@
 Config = {}
 
-Config.updateScoreboardInterval = 5000
+Config.updateScoreboardInterval = 2000
 Config.screenBlur = true
 Config.screenBlurAnimationDuration = 500
 Config.showKeyBinds = true
 Config.showPlayerInfo = true
 Config.showPlayerPed = true
 Config.showIllegalActivites = true
-Config.OldESX = true
+Config.OldESX = false
 
 Config.policeCounterType = "job"
 Config.policeCounterIdentifier = "police"

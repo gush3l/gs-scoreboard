@@ -1,4 +1,4 @@
-if Config.OldESX == true then
+if Config.OldESX then
     ESX = nil
     TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 end
@@ -25,7 +25,7 @@ function RefreshScoreboard()
         local playerID = xPlayer.source
         local playerName = Sanitize(xPlayer.getName())
         local playerJob = xPlayer.job.label
-        local playerGroup = xPlayer.getGroup()
+        local playerGroup = xPlayer.group
         TriggerClientEvent("gs-scoreboard:addUserToScoreboard", -1, playerID, playerName, playerJob, playerGroup)
         TriggerClientEvent("gs-scoreboard:sendConfigToNUI", -1)
     end
@@ -43,39 +43,34 @@ RegisterCommand("refreshscoreboard", function()
     RefreshScoreboard()
 end, true)
 
-RegisterServerEvent("gs-scoreboard:updateValues")
-AddEventHandler(
-    "gs-scoreboard:updateValues",
-    function()
+CreateThread(function()
+    while true do
         local onlinePlayers = getOnlinePlayers()
         local onlineStaff = getOnlineStaff()
-        local onlinePolice = getOnlineByType(Config.policeCounterType,Config.policeCounterIdentifier)
-        local onlineEMS = getOnlineByType(Config.emsCounterType,Config.emsCounterIdentifier)
-        local onlineTaxi = getOnlineByType(Config.taxiCounterType,Config.taxiCounterIdentifier)
-        local onlineMechanics = getOnlineByType(Config.mechanicCounterType,Config.mechanicCounterIdentifier)
+        local onlinePolice = #ESX.GetExtendedPlayers(Config.policeCounterType,Config.policeCounterIdentifier)
+        local onlineEMS = #ESX.GetExtendedPlayers(Config.emsCounterType,Config.emsCounterIdentifier)
+        local onlineTaxi = #ESX.GetExtendedPlayers(Config.taxiCounterType,Config.taxiCounterIdentifier)
+        local onlineMechanics = #ESX.GetExtendedPlayers(Config.mechanicCounterType,Config.mechanicCounterIdentifier)
+        local illegalActivites = getIllegalActivitesData()
         TriggerClientEvent("gs-scoreboard:setValues", -1, onlinePlayers, onlineStaff, onlinePolice, onlineEMS, onlineTaxi, onlineMechanics, illegalActivites)
+        Wait(Config.updateScoreboardInterval)
     end
-)
+end)
 
-RegisterNetEvent('gs-scoreboard:requestUserData')
-AddEventHandler(
-    'gs-scoreboard:requestUserData',
+RegisterNetEvent('gs-scoreboard:requestUserData',
     function(target)
+        local target = target or source
         TriggerClientEvent("gs-scoreboard:retrieveUserData", tonumber(target), source, tonumber(target))
-    end
-)
+    end)
 
-RegisterNetEvent('gs-scoreboard:sendRequestedData')
-AddEventHandler(
-    'gs-scoreboard:sendRequestedData',  
+RegisterNetEvent('gs-scoreboard:sendRequestedData', 
     function(to, data)
         local xPlayer = ESX.GetPlayerFromId(source)
         if xPlayer ~= nil then
             data.roleplayName = xPlayer.getName()
             TriggerClientEvent("gs-scoreboard:receiveRequestedData", to, source, data)
         end
-    end
-)
+    end)
 
 AddEventHandler(
     'esx:playerLoaded',  
@@ -105,28 +100,23 @@ function getOnlineStaff()
     return (#xPlayersTotal - #xPlayersUsers)
 end
 
-function getOnlineByType(type, value)
-    local xPlayers = ESX.GetPlayers()
-    local counter = 0
-
-    for i=1, #xPlayers, 1 do
-        local xPlayer = ESX.GetPlayerFromId(xPlayers[i])
-        if type == "group" and xPlayer.getGroup() == value then
-            counter = counter + 1
-        elseif type == "job" and xPlayer.getJob().name == value then
-            counter = counter + 1
-        end
-    end
-
-    return counter
-end
-
 function getIllegalActivitesData()
     local data = Config.illegalActivites
     for i = 1,#data do
         data[i]["onlinePlayers"] = getOnlinePlayers()
-        data[i]["onlineGroup"] = getOnlineByType(data[i]["groupType"],data[i]["groupName"])
+        data[i]["onlineGroup"] = #ESX.GetExtendedPlayers(data[i]["groupType"],data[i]["groupName"])
         TriggerClientEvent("gs-scoreboard:sendIllegalActivity",-1,data[i])
     end
     return data
 end
+
+ESX.RegisterServerCallback('gs-scoreboard:Close', function(src, cb)
+   SetPlayerCullingRadius(src, 0.0)
+   cb()
+end)
+
+ESX.RegisterServerCallback('gs-scoreboard:Open', function(src, cb)
+    SetPlayerCullingRadius(src, 50000.0)
+    cb()
+ end)
+ 

@@ -1,23 +1,18 @@
 local isScoreboardOpen = false
 local requestedData
 
-Citizen.CreateThread(function() 
-    ESX = nil
+CreateThread(function()
+    if Config.OldESX then 
+        while ESX == nil do
+            TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+            Wait(0)
+        end
 
-    while ESX == nil do
-        TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
-        Citizen.Wait(0)
-    end
+        while ESX.GetPlayerData().job == nil do
+            Wait(10)
+        end
 
-    while ESX.GetPlayerData().job == nil do
-        Citizen.Wait(10)
-    end
-
-    ESX.PlayerData = ESX.GetPlayerData()
-
-    while true do
-        Citizen.Wait(Config.updateScoreboardInterval)
-        TriggerServerEvent("gs-scoreboard:updateValues")
+        ESX.PlayerData = ESX.GetPlayerData()
     end
 end)
 
@@ -25,8 +20,8 @@ local PlayerPedPreview
 function createPedScreen(playerID)
     CreateThread(function()
         ActivateFrontendMenu(GetHashKey("FE_MENU_VERSION_JOINING_SCREEN"), true, -1)
-        Citizen.Wait(100)
-        N_0x98215325a695e78a(false)
+        Wait(100)
+        SetMouseCursorVisibleInMenus(false)
         PlayerPedPreview = ClonePed(playerID, GetEntityHeading(playerID), true, false)
         local x,y,z = table.unpack(GetEntityCoords(PlayerPedPreview))
         SetEntityCoords(PlayerPedPreview, x,y,z-10)
@@ -43,34 +38,38 @@ end
 
 RegisterCommand('togglescoreboard', function()
     if not isScoreboardOpen then
-        TriggerServerEvent('gs-scoreboard:requestUserData', tonumber(GetPlayerServerId(PlayerId())))
-        if Config.showPlayerPed then
-            SetFrontendActive(true)
-            createPedScreen(PlayerPedId())
-        end
-        SendNUIMessage({
-            action = "show",
-            keyBindValue = tostring(GetControlInstructionalButton(0, 0x3635f532 | 0x80000000, 1)),
-        })
-        SetNuiFocus(true,true)
-        if Config.screenBlur then
-            TriggerScreenblurFadeIn(Config.screenBlurAnimationDuration)
-        end
         isScoreboardOpen = true
-    elseif isScoreboardOpen then
-        if Config.showPlayerPed then
-            DeleteEntity(PlayerPedPreview)
-            SetFrontendActive(false)
-        end
-        SendNUIMessage({
-            action = "hide",
-            keyBindValue = tostring(GetControlInstructionalButton(0, 0x3635f532 | 0x80000000, 1)),
-        })
-        SetNuiFocus(false,false)
-        isScoreboardOpen = false
-        if Config.screenBlur then
-            TriggerScreenblurFadeOut(Config.screenBlurAnimationDuration)
-        end
+        ESX.TriggerServerCallback("gs-scoreboard:Open", function()
+            TriggerServerEvent('gs-scoreboard:requestUserData')
+            if Config.showPlayerPed then
+                SetFrontendActive(true)
+                createPedScreen(ESX.PlayerData.ped or PlayerPedId())
+            end
+            SendNUIMessage({
+                action = "show",
+                keyBindValue = tostring(GetControlInstructionalButton(0, 0x3635f532 | 0x80000000, 1)),
+            })
+            SetNuiFocus(true,true)
+            if Config.screenBlur then
+                TriggerScreenblurFadeIn(Config.screenBlurAnimationDuration)
+            end
+        end)
+    else
+        ESX.TriggerServerCallback("gs-scoreboard:Close", function()
+            if Config.showPlayerPed then
+                DeleteEntity(PlayerPedPreview)
+                SetFrontendActive(false)
+            end
+            SendNUIMessage({
+                action = "hide",
+                keyBindValue = tostring(GetControlInstructionalButton(0, 0x3635f532 | 0x80000000, 1)),
+            })
+            SetNuiFocus(false,false)
+            isScoreboardOpen = false
+            if Config.screenBlur then
+                TriggerScreenblurFadeOut(Config.screenBlurAnimationDuration)
+            end
+        end)
     end
 end, false)
 
@@ -171,10 +170,6 @@ AddEventHandler(
     function(from, data)
         requestedData = data
         local tooFar = false
-        local playerCoords = GetEntityCoords(PlayerPedId())
-        if #(playerCoords - data.playerCoords) > 300 then
-            tooFar = true
-        end
         SendNUIMessage(
         {
             action="playerInfoUpdate",
@@ -194,7 +189,7 @@ AddEventHandler(
         local data = {}
         data.playerName = GetPlayerName(PlayerId())
         data.playerID = to
-        data.playerCoords = GetEntityCoords(PlayerPedId())
+        data.playerCoords = GetEntityCoords(ESX.PlayerData.ped or PlayerPedId())
         local retVal, timePlayed = StatGetInt('mp0_total_playing_time')
         data.timePlayed = timePlayed
         TriggerServerEvent('gs-scoreboard:sendRequestedData', from, data)
